@@ -17,7 +17,9 @@
 ![alt text](image-1.png)
 
 1. Find all the topics and tasks which are thought in the month of October 
-  >db.topics.aggregate([
+
+    ```javascript
+    db.topics.aggregate([
     {$lookup: {
       from: 'tasks',
       localField: 'topic_id',
@@ -38,15 +40,104 @@
         topic_date: 1,
         due_date: "$taskinfo.due_date"
    }}]);
+   ```
 
-1. Find all the company drives which appeared between 15 oct-2020 and 31-oct-2020
+2. Find all the company drives which appeared between 15 oct-2021 and 31-oct-2021
 
-   > db.company_drives.find({ $or: [{ drive_date: { $gte: new Date("2021-10-15") ,$lte: new Date("2021-10-31")} }]});
+    ```javascript
+    db.company_drives.find({ 
+      $or: [{ drive_date: 
+        { $gte: new Date("2021-10-15"),
+        $lte: new Date("2021-10-31")} 
+      }]
+    });
+    ```
 
-2. Find all the company drives and students who are appeared for the placement
+3. Find all the company drives and students who are appeared for the placement
 
-3. Find the number of problems solved by the user in codekata
+    ```javascript
+    > db.company_drives.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "user-id",
+          foreignField: "user-id",
+          as: "info",
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        company_name: 1,
+        drive_date: 1,
+        "info.name": 1,
+        "info.email": 1,
+        "info.user-id": 1,
+      },
+    },
+    ]);
 
-4. Find all the mentors with who has the mentee's count more than 15
-   > db.mentors.find({mentee_count:{$gte:15}});
-5. Find the number of users who are absent and task is not submitted between 15 oct-2020 and 31-oct-2020
+4. Find the number of problems solved by the user in codekata
+
+    ```javascript
+    db.codekata.aggregate([
+      {
+        $lookup: {
+        from: "users",
+        localField: "user-id",
+        foreignField: "user-id",
+        as: "info",
+        },
+      },
+      {
+        $project: {
+        _id: 0,
+        no_of_problems_solved: 1,
+        "info.name": 1,
+        },
+      },
+    ]);
+    ```
+
+5. Find all the mentors with who has the mentee's count more than 15
+   
+    ```javascript
+   db.mentors.find({mentee_count:{$gte:15}});
+   ```
+
+6. Find the number of users who are absent and task is not submitted between 15 oct-2021 and 31-oct-2021
+
+    ```javascript
+    db.attendence.aggregate([
+      {
+        $lookup: {
+        from: "topics",
+        localField: "topic_id",
+        foreignField: "topic_id",
+        as: "topics",
+        },
+      },
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "topic_id",
+          foreignField: "topic_id",
+          as: "tasks",
+        },
+      },
+      { $match: { $and: [{ staus: false }, { "tasks.submitted": false }] } },
+      { $match: { 
+        $and: [{
+          $or: [
+            { "topics.topic_date": { $gte: new Date("2021–10–15") , $lte: new Date("2021–10–31") } }
+          ],
+        },
+        {
+          $or: [
+            { "tasks.due_date": { $gte: new Date("2021–10–15") , $lte: new Date("2021–10–31") } },
+          ],
+        },],
+      },},
+      {$count:"Absentees"}
+    ]);
+    ```
