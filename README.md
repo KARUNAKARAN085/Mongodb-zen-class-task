@@ -17,24 +17,26 @@
 ![alt text](image-1.png)
 
 1. Find all the topics and tasks which are thought in the month of October 
-  >db.topics.aggregate([{$lookup: {
-from: 'tasks',
-localField: 'topic_id',
-foreignField: 'task_id',
-as: 'taskinfo'}},
-{
-$match: {$and: [
-{ topic_date: { $gte: new Date("2021–10–01"), $lt: new Date("2021–10–30") } },
-{$or: [
-   { "taskinfo.due_date": { $gte: new Date("2021–10–01"), $lte: new Date("2021–10–30") } },
-   { "taskinfo.due_date": { $exists: false } }]}]}},
-   {
-   $project: {
-_id: 0,
-topic_id: 1,
-topic: 1,
-topic_date: 1,
-due_date: "$taskinfo.due_date"
+  >db.topics.aggregate([
+    {$lookup: {
+      from: 'tasks',
+      localField: 'topic_id',
+      foreignField: 'task_id',
+      as: 'taskinfo'
+    }},
+    {
+      $match: {$and: [
+      { topic_date: { $gte: new Date("2021–10–01"), $lt: new Date("2021–10–30") } },
+      {$or: [
+      { "taskinfo.due_date": { $gte: new Date("2021–10–01"), $lte: new Date("2021–10–30") } },
+      { "taskinfo.due_date": { $exists: false } }]}]}},
+      {
+      $project: {
+        _id: 0,
+        topic_id: 1,
+        topic: 1,
+        topic_date: 1,
+        due_date: "$taskinfo.due_date"
    }}]);
 
 1. Find all the company drives which appeared between 15 oct-2020 and 31-oct-2020
